@@ -1,0 +1,4 @@
+# Dependências do Monitor de Internet (instaladas pelo instalar.bat)
+fastapi>=0.110,<1
+uvicorn>=0.29
+websockets>=12

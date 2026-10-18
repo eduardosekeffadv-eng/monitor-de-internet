@@ -1,0 +1,36 @@
+# Ambiente virtual
+venv/
+.venv/
+env/
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Dados e histórico pessoal de conexão
+data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+
+# Logs
+logs/
+*.log
+
+# Executável gerado (PyInstaller)
+build/
+dist/
+*.spec
+
+# Relatórios exportados
+relatorios/
+reports_output/
+
+# Editor e sistema
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+teste_antena_resultado.txt

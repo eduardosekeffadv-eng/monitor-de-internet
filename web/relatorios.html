@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Relatórios · Monitor de Internet</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div id="sim-banner" class="sim-banner" hidden>MODO SIMULAÇÃO — os dados exibidos são fictícios e ficam em um banco separado.</div>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round">
+        <circle cx="16" cy="16" r="3.2" fill="currentColor" stroke="none"/>
+        <path d="M10.6 21.4a7.6 7.6 0 0 1 0-10.8M21.4 10.6a7.6 7.6 0 0 1 0 10.8" stroke-width="2"/>
+        <path d="M6.3 25.7a13.7 13.7 0 0 1 0-19.4M25.7 6.3a13.7 13.7 0 0 1 0 19.4" stroke-width="2" opacity=".55"/>
+      </svg>
+      <div><div class="brand-name">Monitor de Internet</div><div class="brand-sub">Relatórios</div></div>
+    </div>
+    <nav class="nav" aria-label="Páginas">
+      <a href="/">Painel</a><a href="/historico">Histórico</a><a href="/relatorios">Relatórios</a><a href="/configuracoes">Configurações</a>
+    </nav>
+    <div class="topbar-right">
+      <div class="zoom" id="zoom"></div>
+      <div class="live-pill" id="live-pill" data-state="connecting" data-poll="1"><span class="live-dot"></span><span id="live-text">Verificando…</span></div>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </header>
+
+  <main class="page" style="max-width:1180px">
+    <section class="card">
+      <h2>Gerar relatório</h2>
+      <p class="hint-p" style="margin:4px 0 14px">Relatório completo em HTML: resumo e avaliação da estabilidade, gráficos de latência e perda,
+        comparação entre dias e modos de conexão, horários com mais problemas, linha do tempo e lista detalhada das interrupções —
+        suficiente para documentar problemas junto ao provedor.</p>
+
+      <div class="rep-grid" id="kinds">
+        <div class="rep-card selected" data-k="diario" tabindex="0" role="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><rect x="7" y="12" width="4" height="4" rx=".5" fill="currentColor"/></svg>
+          <b>Diário</b><small>Um dia inteiro, de 00:00 a 23:59</small></div>
+        <div class="rep-card" data-k="semanal" tabindex="0" role="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M6 14h12"/></svg>
+          <b>Semanal</b><small>De segunda a domingo</small></div>
+        <div class="rep-card" data-k="mensal" tabindex="0" role="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M7 13h2M11 13h2M15 13h2M7 17h2M11 17h2"/></svg>
+          <b>Mensal</b><small>O mês inteiro</small></div>
+        <div class="rep-card" data-k="personalizado" tabindex="0" role="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+          <b>Personalizado</b><small>Qualquer intervalo, com hora</small></div>
+      </div>
+
+      <div class="rep-form form">
+        <label class="fld" id="f-day"><span>Dia</span><input type="date" id="in-day"></label>
+        <label class="fld" id="f-week" hidden><span>Qualquer dia da semana desejada</span><input type="date" id="in-week"></label>
+        <label class="fld" id="f-month" hidden><span>Mês</span><input type="month" id="in-month" style="background:var(--bg-2);border:1px solid var(--line-2);border-radius:8px;padding:7px 9px;color:var(--text);color-scheme:dark;font:13px var(--sans)"></label>
+        <label class="fld" id="f-from" hidden><span>De</span><input type="datetime-local" id="in-from" style="background:var(--bg-2);border:1px solid var(--line-2);border-radius:8px;padding:7px 9px;color:var(--text);color-scheme:dark;font:13px var(--sans)"></label>
+        <label class="fld" id="f-to" hidden><span>Até</span><input type="datetime-local" id="in-to" style="background:var(--bg-2);border:1px solid var(--line-2);border-radius:8px;padding:7px 9px;color:var(--text);color-scheme:dark;font:13px var(--sans)"></label>
+        <div class="quick" id="quick"></div>
+      </div>
+      <div class="preview-note" id="preview">—</div>
+
+      <div class="rep-actions">
+        <a class="btn primary small" id="open" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3h7v7M21 3l-9 9M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg>
+          Abrir relatório</a>
+        <a class="btn small" id="download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></svg>
+          Baixar arquivo HTML</a>
+      </div>
+      <p class="hint-p" id="err" style="color:var(--bad)"></p>
+    </section>
+
+    <section class="card">
+      <h2>Como usar</h2>
+      <ul class="hint-p" style="line-height:1.7;padding-left:18px">
+        <li><b>Abrir relatório</b> mostra o relatório no navegador, com botões para salvar o arquivo e imprimir.</li>
+        <li><b>Baixar arquivo HTML</b> gera um arquivo único e independente: abre em qualquer computador, sem o Monitor de Internet e sem internet.</li>
+        <li>Para PDF, use <b>Imprimir / salvar PDF</b> no relatório e escolha "Salvar como PDF" no Chrome — a versão de impressão usa fundo claro.</li>
+        <li id="data-since">Os relatórios usam todo o histórico gravado no computador.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/relatorios.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+/* Mapa de calor e faixas por dia (Histórico e relatórios). */
+/* mapa de calor */
+.heat-tools { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.heat-tools button { border: 1px solid var(--line-2); background: var(--bg-2); color: var(--text-3); padding: 5px 10px; border-radius: 7px; font: 500 12px var(--sans); cursor: pointer; }
+.heat-tools button.active { color: var(--text); border-color: var(--accent); }
+.heat { display: grid; grid-template-columns: 74px repeat(24, 1fr); gap: 3px; font-size: 10.5px; }
+.heat .hd { color: var(--text-3); text-align: center; font-family: var(--mono); }
+.heat .dl { color: var(--text-2); font-family: var(--mono); white-space: nowrap; align-self: center; }
+.heat .c { height: 22px; border-radius: 4px; background: #16202b; }
+.heat .c.nd { background: repeating-linear-gradient(-45deg, #0f161e, #0f161e 3px, #131c26 3px, #131c26 6px); }
+.scale { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11px; color: var(--text-3); }
+.scale i { width: 22px; height: 10px; border-radius: 3px; display: inline-block; }
+.worst { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 12.5px; color: var(--text-2); }
+.worst b { font-family: var(--mono); background: var(--bad-dim); color: #fda4af; padding: 3px 8px; border-radius: 6px; }
+
+/* linha do tempo */
+.strips { display: grid; gap: 7px; }
+.strip { display: grid; grid-template-columns: 74px 1fr 88px; gap: 10px; align-items: center; font-size: 11.5px; }
+.strip .dl { font-family: var(--mono); color: var(--text-2); }
+.strip .bar { position: relative; height: 16px; background: #15202b; border-radius: 4px; overflow: hidden; }
+.strip .bar i { position: absolute; top: 0; bottom: 0; }
+.strip .bar i.o { background: var(--bad); min-width: 2px; }
+.strip .bar i.m { background: var(--micro); width: 1.5px !important; opacity: .9; }
+.strip .bar i.x { background: repeating-linear-gradient(-45deg, rgba(100,116,139,.45), rgba(100,116,139,.45) 2px, transparent 2px, transparent 5px); }
+.strip .dt { color: var(--text-3); text-align: right; font-family: var(--mono); }
+.hours { display: grid; grid-template-columns: 74px 1fr 88px; gap: 10px; font-size: 10px; color: var(--text-3); font-family: var(--mono); }
+.hours div { display: flex; justify-content: space-between; }
+

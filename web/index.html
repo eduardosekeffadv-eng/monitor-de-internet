@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monitor de Internet</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/app.css">
+  <link rel="stylesheet" href="/static/css/dish.css">
+</head>
+<body>
+  <div id="sim-banner" class="sim-banner" hidden>
+    MODO SIMULAÇÃO — os dados exibidos são fictícios e ficam em um banco separado.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round">
+        <circle cx="16" cy="16" r="3.2" fill="currentColor" stroke="none"/>
+        <path d="M10.6 21.4a7.6 7.6 0 0 1 0-10.8M21.4 10.6a7.6 7.6 0 0 1 0 10.8" stroke-width="2"/>
+        <path d="M6.3 25.7a13.7 13.7 0 0 1 0-19.4M25.7 6.3a13.7 13.7 0 0 1 0 19.4" stroke-width="2" opacity=".55"/>
+      </svg>
+      <div>
+        <div class="brand-name">Monitor de Internet</div>
+        <div class="brand-sub">Estação de monitoramento da conexão</div>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Páginas">
+      <a href="/">Painel</a><a href="/historico">Histórico</a><a href="/relatorios">Relatórios</a><a href="/configuracoes">Configurações</a>
+    </nav>
+    <div class="topbar-right">
+      <div class="zoom" id="zoom"></div>
+      <button class="provider-pill" id="provider-pill" title="Alterar o tipo de conexão">
+        <span class="provider-k">Conexão</span><span id="provider-text">—</span>
+      </button>
+      <div class="live-pill" id="live-pill" data-state="connecting">
+        <span class="live-dot"></span><span id="live-text">Conectando…</span>
+      </div>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </header>
+
+  <main class="page">
+    <!-- Linha principal: status, latência, perda e modo -->
+    <section class="hero">
+      <article class="card status-card" id="status-card" data-status="online">
+        <div class="card-label">Status da conexão</div>
+        <div class="status-main">
+          <div class="status-orb"><span></span></div>
+          <div>
+            <div class="status-word" id="status-word">—</div>
+            <div class="status-desc" id="status-desc">Aguardando as primeiras medições…</div>
+          </div>
+        </div>
+        <div class="status-foot" id="status-foot"></div>
+      </article>
+
+      <article class="card metric-card">
+        <div class="card-label">Latência atual</div>
+        <div class="big-number"><span id="lat-now">—</span><small>ms</small></div>
+        <div class="metric-sub" id="lat-sub">Menor tempo entre Cloudflare e Google</div>
+      </article>
+
+      <article class="card metric-card">
+        <div class="card-label">Perda de pacotes <span class="hint">últimos 60 s</span></div>
+        <div class="big-number"><span id="loss-now">—</span><small>%</small></div>
+        <div class="meter"><div class="meter-fill" id="loss-meter"></div><div class="meter-mark" id="loss-mark"></div></div>
+        <div class="metric-sub" id="loss-sub">Hoje: —</div>
+      </article>
+
+      <article class="card mode-card" id="mode-card" tabindex="0" role="button" aria-label="Alterar modo de conexão">
+        <div class="card-label">Modo de conexão <span class="hint link">alterar</span></div>
+        <div class="mode-main">
+          <span class="mode-icon" id="mode-icon"></span>
+          <div>
+            <div class="mode-name" id="mode-name">—</div>
+            <div class="mode-state" id="mode-state"></div>
+          </div>
+        </div>
+        <div class="mode-wifi" id="mode-wifi"></div>
+        <div class="mode-warn" id="mode-warn" hidden></div>
+      </article>
+    </section>
+
+    <!-- Indicadores do dia -->
+    <section class="kpis">
+      <article class="kpi"><div class="kpi-label">Latência média <span>hoje</span></div><div class="kpi-value" id="k-lat-avg">—</div></article>
+      <article class="kpi"><div class="kpi-label">Menor latência <span>hoje</span></div><div class="kpi-value" id="k-lat-min">—</div></article>
+      <article class="kpi"><div class="kpi-label">Maior latência <span>hoje</span></div><div class="kpi-value" id="k-lat-max">—</div></article>
+      <article class="kpi"><div class="kpi-label" id="k-online-label">Tempo online</div><div class="kpi-value" id="k-online">—</div><div class="kpi-sub" id="k-online-sub"></div></article>
+      <article class="kpi"><div class="kpi-label">Interrupções <span>hoje</span></div><div class="kpi-value" id="k-outages">—</div><div class="kpi-sub" id="k-micro"></div></article>
+      <article class="kpi"><div class="kpi-label">Indisponibilidade <span>hoje</span></div><div class="kpi-value" id="k-down">—</div><div class="kpi-sub" id="k-down-sub"></div></article>
+      <article class="kpi"><div class="kpi-label">Disponibilidade <span>hoje</span></div><div class="kpi-value" id="k-avail">—</div><div class="kpi-sub" id="k-avail-sub"></div></article>
+      <article class="kpi"><div class="kpi-label">Última interrupção</div><div class="kpi-value" id="k-last">—</div><div class="kpi-sub" id="k-last-sub"></div></article>
+    </section>
+
+    <!-- Gráfico em tempo real -->
+    <section class="card chart-card">
+      <div class="chart-head">
+        <div>
+          <h2>Monitoramento em tempo real</h2>
+          <p class="chart-subtitle" id="chart-subtitle">Uma barra por medição · altura = latência</p>
+        </div>
+        <div class="chart-tools">
+          <div class="target-chips" id="target-chips"></div>
+          <div class="playback" role="group" aria-label="Reprodução do gráfico">
+            <button class="pb-btn" id="btn-pause" title="Pausar o gráfico para analisar as barras — o monitoramento continua (atalho: barra de espaço)">
+              <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+              <svg class="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+              <span id="pause-text">Pausar</span>
+            </button>
+            <button class="pb-btn live-btn on" id="btn-live" title="Voltar ao tempo atual (ao vivo)"><span class="rec"></span>AO VIVO</button>
+          </div>
+          <div class="segmented" id="window-select" role="group" aria-label="Janela do gráfico">
+            <button data-w="60">1 min</button>
+            <button data-w="180">3 min</button>
+            <button data-w="300">5 min</button>
+            <button data-w="600">10 min</button>
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrap" id="chart-wrap">
+        <canvas id="rt-chart" aria-label="Gráfico de latência em tempo real"></canvas>
+        <div class="chart-tooltip" id="chart-tooltip" hidden></div>
+        <div class="chart-empty" id="chart-empty">Aguardando medições…</div>
+      </div>
+      <div class="rt-scroll" id="rt-scroll" title="Arraste para ver o que já passou — o gráfico pausa e o monitoramento continua"></div>
+      <div class="legend">
+        <span><i class="sw sw-ok"></i>Normal</span>
+        <span><i class="sw sw-elev"></i>Latência elevada</span>
+        <span><i class="sw sw-partial"></i>Perda parcial (um destino sem resposta)</span>
+        <span><i class="sw sw-fail"></i>Sem resposta externa</span>
+        <span><i class="sw sw-band-out"></i>Interrupção confirmada</span>
+        <span><i class="sw sw-band-micro"></i>Microqueda</span>
+        <span><i class="sw sw-band-off"></i>Monitor inativo</span>
+      </div>
+    </section>
+
+    <!-- Dados da própria antena Starlink -->
+    <section class="card dish-card" id="dish-card" hidden>
+      <div class="dish-head">
+        <div class="dish-title">
+          <span class="dish-logo" id="dish-logo"></span>
+          <div>
+            <h2>Antena Starlink</h2>
+            <p class="chart-subtitle" id="dish-sub">Dados informados pela própria antena</p>
+          </div>
+        </div>
+        <div class="dish-actions">
+          <span class="dish-state" id="dish-state" data-s="off">—</span>
+          <button class="pb-btn" id="btn-sky" title="Mostrar o mapa de obstruções registrado pela antena">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 3v18M3 12h18"/></svg>
+            Mapa do céu</button>
+        </div>
+      </div>
+      <div class="dish-msg" id="dish-msg" hidden></div>
+      <div class="dish-body" id="dish-body">
+        <div class="dish-tiles" id="dish-tiles"></div>
+        <div class="dish-24">
+          <div class="dish-24-h"><b>Quedas registradas pela antena</b><span class="hint">últimas 24 h · com o motivo de cada uma</span><span class="dish-24-n" id="dish-24-n"></span></div>
+          <div id="dish-causes"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quedas e destinos -->
+    <section class="bottom">
+      <article class="card failures-card">
+        <div class="section-head">
+          <h2>Quedas recentes</h2>
+          <div class="segmented small" id="fail-filter">
+            <button data-f="all" class="active">Todas</button>
+            <button data-f="interrupcao">Interrupções</button>
+            <button data-f="microqueda">Microquedas</button>
+          </div>
+        </div>
+        <div class="failures" id="failures">
+          <div class="empty">Nenhuma queda registrada até agora.</div>
+        </div>
+      </article>
+
+      <article class="card targets-card">
+        <div class="section-head"><h2>Destinos monitorados</h2></div>
+        <div id="targets" class="targets"></div>
+        <div class="net-info" id="net-info"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span id="foot-session">—</span>
+    <span id="foot-db">—</span>
+    <span id="foot-version">—</span>
+  </footer>
+
+  <!-- Escolha do modo de conexão -->
+  <div class="modal-backdrop" id="mode-modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mode-modal-title">
+      <h2 id="mode-modal-title">Como este computador está conectado agora?</h2>
+      <p class="modal-text">O modo fica registrado junto com todas as medições e eventos, para comparar a qualidade da conexão em cada forma de uso. Você pode trocar a qualquer momento pelo cartão <b>Modo de conexão</b>.</p>
+      <div class="mode-options" id="mode-options"></div>
+      <p class="modal-note" id="mode-modal-note"></p>
+      <div class="modal-actions">
+        <button class="btn ghost" id="mode-cancel">Agora não</button>
+        <button class="btn primary" id="mode-confirm">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tipo de conexão de internet -->
+  <div class="modal-backdrop" id="provider-modal" hidden>
+    <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="provider-modal-title">
+      <h2 id="provider-modal-title">Qual é o tipo da sua conexão de internet?</h2>
+      <p class="modal-text">Isso ajusta o equipamento do provedor monitorado, os textos do diagnóstico e os limites de latência recomendados. Pode ser alterado depois pelo botão <b>Conexão</b> no topo.</p>
+      <div class="provider-options" id="provider-options"></div>
+      <div class="form-grid">
+        <label class="field">
+          <span>Nome do provedor ou plano <em>(opcional)</em></span>
+          <input type="text" id="provider-name" maxlength="80" placeholder="Ex.: Starlink Residencial, Vivo Fibra 500 MB" autocomplete="off">
+        </label>
+        <label class="field">
+          <span id="equip-label">Endereço do equipamento do provedor</span>
+          <input type="text" id="equip-host" maxlength="15" placeholder="Ex.: 192.168.100.1" autocomplete="off" inputmode="decimal">
+          <small id="equip-help"></small>
+        </label>
+      </div>
+      <label class="check">
+        <input type="checkbox" id="apply-thresholds" checked>
+        <span>Usar os limites de latência recomendados para este tipo <em id="thr-hint"></em></span>
+      </label>
+      <p class="modal-note" id="provider-note"></p>
+      <div class="modal-actions">
+        <button class="btn ghost" id="provider-cancel">Cancelar</button>
+        <button class="btn primary" id="provider-confirm">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mapa de obstruções da antena -->
+  <div class="modal-backdrop" id="sky-modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="sky-title">
+      <h2 id="sky-title">Mapa de obstruções da antena</h2>
+      <p class="modal-text">É a visão do céu acima da antena, montada por ela mesma à medida que os satélites passam. O centro é o ponto mais alto do céu e a borda, o horizonte. <b style="color:#2dd4bf">Verde-água</b>: céu livre · <b style="color:#f43f5e">vermelho</b>: sinal bloqueado (árvore, telhado, parede) · áreas vazias: direções ainda não observadas.</p>
+      <div class="sky-wrap"><canvas id="sky-canvas"></canvas><div class="sky-msg" id="sky-msg">Carregando…</div></div>
+      <p class="modal-note" id="sky-note"></p>
+      <div class="modal-actions"><button class="btn primary" id="sky-close">Fechar</button></div>
+    </div>
+  </div>
+
+  <script src="/static/js/common.js"></script>
+  <script src="/static/vendor/chart.umd.min.js"></script>
+  <script src="/static/js/format.js"></script>
+  <script src="/static/js/dish-view.js"></script>
+  <script src="/static/js/realtime-chart.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# Opcional: leitura dos dados da própria antena Starlink (motivo das quedas,
+# alertas, obstruções). Instalado pelo instalar.bat; se falhar, o monitor
+# funciona normalmente, apenas sem esses dados.
+starlink-grpc-core>=1.2,<2

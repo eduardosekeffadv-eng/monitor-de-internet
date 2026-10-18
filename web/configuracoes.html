@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Configurações · Monitor de Internet</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div id="sim-banner" class="sim-banner" hidden>MODO SIMULAÇÃO — os dados exibidos são fictícios e ficam em um banco separado.</div>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round">
+        <circle cx="16" cy="16" r="3.2" fill="currentColor" stroke="none"/>
+        <path d="M10.6 21.4a7.6 7.6 0 0 1 0-10.8M21.4 10.6a7.6 7.6 0 0 1 0 10.8" stroke-width="2"/>
+        <path d="M6.3 25.7a13.7 13.7 0 0 1 0-19.4M25.7 6.3a13.7 13.7 0 0 1 0 19.4" stroke-width="2" opacity=".55"/>
+      </svg>
+      <div><div class="brand-name">Monitor de Internet</div><div class="brand-sub">Configurações</div></div>
+    </div>
+    <nav class="nav" aria-label="Páginas">
+      <a href="/">Painel</a><a href="/historico">Histórico</a><a href="/relatorios">Relatórios</a><a href="/configuracoes">Configurações</a>
+    </nav>
+    <div class="topbar-right">
+      <div class="zoom" id="zoom"></div>
+      <div class="live-pill" id="live-pill" data-state="connecting" data-poll="1"><span class="live-dot"></span><span id="live-text">Verificando…</span></div>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </header>
+
+  <main class="page" style="max-width:1180px">
+    <form class="form" id="form" autocomplete="off" novalidate>
+      <div id="sections"><p class="empty">Carregando configurações…</p></div>
+      <div class="savebar">
+        <span class="msg" id="msg">As alterações valem imediatamente, sem reiniciar (exceto a porta).</span>
+        <div class="actions">
+          <button type="button" class="btn small" id="defaults">Restaurar padrões</button>
+          <button type="button" class="btn small" id="discard">Descartar</button>
+          <button type="submit" class="btn primary small" id="save">Salvar alterações</button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/configuracoes.js"></script>
+</body>
+</html>
